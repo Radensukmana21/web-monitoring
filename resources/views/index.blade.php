@@ -29,12 +29,21 @@
         </div>
     </div><br><br>
 
-    <div class="col-md-4 text-center">
-        <span class="fw-bolder fs-3 mb-1">Notifikasi Hari Ini</span>       
+   <div class="col-md-4 text-center">
+    <span class="fw-bolder fs-3 mb-1">Notifikasi Hari Ini</span>       
+
+    @if ($regionsWithIncoming->isEmpty())
         <div class="alert alert-danger mt-4" role="alert">
-        <strong>Tidak ada data!</strong>
+            <strong>Tidak ada data!</strong>
         </div>
-    </div>
+    @else
+        @foreach ($regionsWithIncoming as $region)
+            <div class="alert alert-success mt-3" role="alert">
+                <strong>{{ $region->name }}</strong> memiliki {{ $region->incomingFiles->count() }} file masuk hari ini.
+            </div>
+        @endforeach
+    @endif
+</div>
 </div>
 
 @endsection
@@ -49,11 +58,32 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    flatpickr(".calendar-input", {
-        inline: true,
-        locale: "id", // Ganti bahasa ke Indonesia
-        disableMobile: true
-    });
+    const calendarData = @json($calendarData);
+
+const datesWithData = calendarData.map(item => ({
+    date: item.date,
+    count: item.count
+}));
+
+flatpickr(".calendar-input", {
+    inline: true,
+    locale: "id",
+    disableMobile: true,
+    onDayCreate: function(dObj, dStr, fp, dayElem) {
+        const date = dayElem.dateObj.toISOString().slice(0, 10);
+        const entry = datesWithData.find(item => item.date === date);
+
+        if (entry) {
+            // Ada data
+            dayElem.style.backgroundColor = '#d4edda'; // hijau
+            dayElem.innerHTML += `<div style="font-size:10px;color:#155724;">+${entry.count}</div>`;
+        } else {
+            // Tidak ada data
+            dayElem.style.backgroundColor = '#f8d7da'; // merah
+            dayElem.innerHTML += `<div style="font-size:10px;color:#721c24;">0</div>`;
+        }
+    }
+});
 
     // Mendapatkan elemen canvas untuk chart.js
     var densityCanvas = document.getElementById('densityCanvas').getContext('2d');
@@ -77,14 +107,31 @@
         }
     };
 
-    // Membuat grafik batang
-    var barChart = new Chart(densityCanvas, {
-        type: 'bar',
-        data: {
-            labels: ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"],
-            datasets: [densityData]
-        },
-        options: chartOptions
+    // Ambil data dari Laravel (convert ke JSON)
+const chartLabels = @json($chartData->pluck('name'));
+const chartCounts = @json($chartData->pluck('total_today'));
+
+var barChart = new Chart(densityCanvas, {
+    type: 'bar',
+    data: {
+        labels: chartLabels,
+        datasets: [{
+            label: 'Jumlah File Masuk Hari Ini',
+            data: chartCounts,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                stepSize: 1
+            }
+        }
+    }
     });
 </script>
 @endpush
