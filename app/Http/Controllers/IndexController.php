@@ -11,32 +11,29 @@ use Carbon\Carbon;
 
 class IndexController extends Controller
 {
-     public function index()
-    {
-        // Ambil semua region yang memiliki file masuk hari ini
-        // $today = Carbon::today();
+public function index()
+{
+    $today = Carbon::today();
 
-        // $regionsWithIncoming = Region::whereHas('incomingFiles', function ($query) use ($today) {
-        //     $query->whereDate('detected_at', $today);
-        // })->with(['incomingFiles' => function ($query) use ($today) {
-        //     $query->whereDate('detected_at', $today);
-        // }])->get();
-        $today = Carbon::today();
-        $regionsWithIncoming = Region::with('incomingFiles')->get();
+    // Hanya ambil region yang memiliki file masuk
+    $regionsWithIncoming = Region::whereHas('incomingFiles') // HANYA YANG PUNYA FILE
+        ->with('incomingFiles') // Muat relasi file
+        ->paginate(5);
 
-        // Data untuk Chart: jumlah file masuk per wilayah
-        $chartData = Region::withCount(['incomingFiles as total_today' => function ($query) use ($today) {
-            $query->whereDate('detected_at', $today);
-        }])->get();
+    // Data untuk Chart
+    $chartData = Region::withCount(['incomingFiles as total_today' => function ($query) use ($today) {
+        $query->whereDate('detected_at', $today);
+    }])->get();
 
-        // Data untuk Kalender: jumlah file per tanggal
-        $calendarData = IncomingFile::select(
-            DB::raw('DATE(detected_at) as date'),
-            DB::raw('count(*) as count')
-        )
-        ->groupBy('date')
-        ->get();
+    // Data untuk Kalender
+    $calendarData = IncomingFile::select(
+        DB::raw('DATE(detected_at) as date'),
+        DB::raw('count(*) as count')
+    )
+    ->groupBy('date')
+    ->get();
 
-        return view('index', compact('regionsWithIncoming', 'chartData', 'calendarData'));
-    }
+    return view('index', compact('regionsWithIncoming', 'chartData', 'calendarData'));
+}
+
 }

@@ -2,103 +2,70 @@
 
 namespace App\Console\Commands;
 
+use App\Models\IncomingFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use App\Models\IncomingFile;
-use App\Models\ArchivedFile;
-use App\Models\Partner;
-use App\Models\Region;
 use Carbon\Carbon;
 
 class ScanLocalDisk extends Command
 {
     protected $signature = 'scan:localdisk';
-    protected $description = 'Scan folder jaringan untuk file baru dan pindahan ke arsip';
+    protected $description = 'Scan network folders for new files';
 
-    protected array $basePaths = [
-        '\\\\10.20.10.98\\backup\\BRK', // Folder utama
-    ];
+    protected array $folderPaths = [];
 
-    public function handle(): void
+    public function __construct()
     {
-        foreach ($this->basePaths as $basePath) {
-            if (!File::exists($basePath)) {
-                $this->warn("Tidak bisa mengakses: $basePath");
+        parent::__construct();
+
+        // Inisialisasi folder utama (backup dan backupftp)
+        $this->folderPaths = [
+            '\\\\10.20.10.98\\backup\bengkulu',     // Folder utama backup
+            // '\\\\10.20.10.98\\backupftp',  // Folder utama backupftp
+        ];
+    }
+
+    public function handle()
+    {
+        foreach ($this->folderPaths as $path) {
+            $this->info("Memindai folder: $path");
+
+            if (!File::exists($path)) {
+                $this->warn("Folder tidak ditemukan atau tidak bisa diakses: $path");
                 continue;
             }
 
-            $regionFolders = File::directories($basePath);
+            // Ambil semua subfolder dalam folder utama
+            $subfolders = File::directories($path);
 
-            foreach ($regionFolders as $regionPath) {
-                $regionName = basename($regionPath);
-                $region = Region::firstOrCreate(['name' => $regionName]);
+            foreach ($subfolders as $subfolder) {
+                $this->info("Memindai subfolder: $subfolder");
 
-                $partnerFolders = File::directories($regionPath);
+                // Ambil semua file dalam subfolder
+                $newFolder = $subfolder . DIRECTORY_SEPARATOR . 'NEW';
 
-                foreach ($partnerFolders as $partnerPath) {
-                    $partnerName = basename($partnerPath);
-                    $partner = Partner::firstOrCreate([
-                        'region_id' => $region->id,
-                        'name' => $partnerName,
-                    ]);
+            if (File::exists($newFolder)) {
+                $files = File::files($newFolder); // hanya ambil file di folder 'new', tidak termasuk subfolder
 
-                    $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
-                    $processedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Processed';
+                foreach ($files as $file) {
+                    $realPath = $file->getRealPath();
+                    $exists = IncomingFile::where('path', $realPath)->exists();
 
-                    // 1. Scan folder New
-                    if (File::exists($newPath)) {
-                        $files = File::files($newPath);
+                    if (!$exists) {
+                        $fileTimestamp = Carbon::createFromTimestamp($file->getMTime()); // waktu terakhir modifikasi file
 
-                        foreach ($files as $file) {
-                            $exists = IncomingFile::where('filename', $file->getFilename())
-                                ->where('region_id', $region->id)
-                                ->where('partner_id', $partner->id)
-                                ->exists();
+                        IncomingFile::create([
+                            'filename' => $file->getFilename(),
+                            'path' => $realPath,
+                            'detected_at' => $fileTimestamp, // gunakan waktu modifikasi file
+                        ]);
 
-                            if (!$exists) {
-                                IncomingFile::create([
-                                    'filename' => $file->getFilename(),
-                                    'path' => $file->getRealPath(),
-                                    'region_id' => $region->id,
-                                    'partner_id' => $partner->id,
-                                    'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
-                                ]);
-
-                                $this->info("📥 File baru: {$file->getFilename()} ($regionName/$partnerName)");
-                            }
-                        }
-                    }
-
-                    // 2. Deteksi file yang sudah pindah ke PROCESSED
-                    if (File::exists($processedPath)) {
-                        $processedFiles = File::files($processedPath);
-
-                        foreach ($processedFiles as $pFile) {
-                            $archived = ArchivedFile::where('filename', $pFile->getFilename())
-                                ->where('region_id', $region->id)
-                                ->where('partner_id', $partner->id)
-                                ->exists();
-
-                            if (!$archived) {
-                                ArchivedFile::create([
-                                    'filename' => $pFile->getFilename(),
-                                    'moved_at' => Carbon::createFromTimestamp($pFile->getMTime()),
-                                    'region_id' => $region->id,
-                                    'partner_id' => $partner->id,
-                                ]);
-
-                                // Hapus dari incoming jika sebelumnya ada
-                                IncomingFile::where('filename', $pFile->getFilename())
-                                    ->where('region_id', $region->id)
-                                    ->where('partner_id', $partner->id)
-                                    ->delete();
-
-                                $this->info("📤 File diarsipkan: {$pFile->getFilename()} ($regionName/$partnerName)");
-                            }
-                        }
+                        $this->info('File baru ditemukan: ' . $file->getFilename());
                     }
                 }
             }
+            }
         }
+
     }
 }
