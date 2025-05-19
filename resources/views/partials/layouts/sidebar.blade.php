@@ -49,7 +49,7 @@
                 id="#kt_aside_menu" data-kt-menu="true">
 
                  <div class="menu-item">
-                    <a class="menu-link {{ Request::is('/dashboard')}}"
+                    <a class="menu-link {{ Request::is('index')}}"
                         href="{{ url('/') }}">
                         <span class="menu-icon">
                             <i class="fas fa-chart-line"></i>
@@ -91,9 +91,9 @@
                             </span>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div data-kt-menu-trigger="click"
+                <!-- <div data-kt-menu-trigger="click"
                     class="menu-item {{ Request::is('admin/manajemen-akun*') ? 'show' : ''}} menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">
