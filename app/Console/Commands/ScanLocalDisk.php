@@ -19,7 +19,7 @@ class ScanLocalDisk extends Command
         '\\\\10.20.10.98\\backup\\BRK', // Folder utama
     ];
 
-    public function handle(): void
+            public function handle(): void
     {
         foreach ($this->basePaths as $basePath) {
             if (!File::exists($basePath)) {
@@ -45,11 +45,13 @@ class ScanLocalDisk extends Command
                     $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
                     $proceedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Proceed';
 
-                    // 1. Scan folder New
+                    // Scan folder New
                     if (File::exists($newPath)) {
                         $files = File::files($newPath);
 
                         foreach ($files as $file) {
+                            $this->info("Memproses file di New: {$file->getFilename()}");
+
                             $exists = IncomingFile::where('filename', $file->getFilename())
                                 ->where('region_id', $region->id)
                                 ->where('partner_id', $partner->id)
@@ -65,15 +67,19 @@ class ScanLocalDisk extends Command
                                 ]);
 
                                 $this->info("📥 File baru: {$file->getFilename()} ($regionName/$partnerName)");
+                            } else {
+                                $this->info("File sudah ada di DB, skip: {$file->getFilename()}");
                             }
                         }
                     }
 
-                    // 2. Deteksi file yang sudah pindah ke proceed
+                    // Scan folder Proceed
                     if (File::exists($proceedPath)) {
                         $proceedFiles = File::files($proceedPath);
 
                         foreach ($proceedFiles as $pFile) {
+                            $this->info("Memproses file di Proceed: {$pFile->getFilename()}");
+
                             $archived = ArchivedFile::where('filename', $pFile->getFilename())
                                 ->where('region_id', $region->id)
                                 ->where('partner_id', $partner->id)
@@ -87,13 +93,14 @@ class ScanLocalDisk extends Command
                                     'partner_id' => $partner->id,
                                 ]);
 
-                                // Hapus dari incoming jika sebelumnya ada
                                 IncomingFile::where('filename', $pFile->getFilename())
                                     ->where('region_id', $region->id)
                                     ->where('partner_id', $partner->id)
                                     ->delete();
 
                                 $this->info("📤 File diarsipkan: {$pFile->getFilename()} ($regionName/$partnerName)");
+                            } else {
+                                $this->info("File sudah diarsipkan, skip: {$pFile->getFilename()}");
                             }
                         }
                     }
