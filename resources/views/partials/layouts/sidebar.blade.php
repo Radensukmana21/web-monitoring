@@ -49,7 +49,7 @@
                 id="#kt_aside_menu" data-kt-menu="true">
 
                 <div class="menu-item">
-                    <a class="menu-link {{ Request::is('admin/dashboard*') ? 'active' : ''}}"
+                    <a class="menu-link {{ Request::is('/dashboard*')}}"
                         href="">
                         <span class="menu-icon">
                             <i class="fas fa-chart-line"></i>
@@ -57,8 +57,17 @@
                         <span class="menu-title">Dashboard</span>
                     </a>
                 </div>
+                <div class="menu-item">
+                    <a class="menu-link {{ Request::is('/daftar-wilayah')}}"
+                        href="">
+                        <span class="menu-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </span>
+                        <span class="menu-title">List Wilayah</span>
+                    </a>
+                </div>
 
-                <div data-kt-menu-trigger="click"
+                <!-- <div data-kt-menu-trigger="click"
                     class="menu-item {{ Request::is('admin/masterdata*') ? 'show' : ''}} menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">
@@ -106,9 +115,9 @@
                             </span>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
-                <div data-kt-menu-trigger="click"
+                <!-- <div data-kt-menu-trigger="click"
                     class="menu-item {{ Request::is('admin/manajemen-akun*') ? 'show' : ''}} menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">
@@ -132,7 +141,7 @@
                             </span>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
             </div>
 

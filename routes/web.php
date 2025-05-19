@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IndexController;
+use App\Http\Controllers\RegionListController;
 use Illuminate\Support\Facades\Artisan;
 
 // Route::get('/', [IndexController::class, 'index']);
@@ -18,3 +19,4 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/', [IndexController::class, 'index'] 
 )->middleware('auth');
+Route::get('/daftar-wilayah', [RegionListController::class, 'index'])->name('region.list');
