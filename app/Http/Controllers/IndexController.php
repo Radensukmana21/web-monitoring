@@ -15,17 +15,21 @@ public function index()
 {
     $today = Carbon::today();
 
-    // Hanya ambil region yang memiliki file masuk
-    $regionsWithIncoming = Region::whereHas('incomingFiles') // HANYA YANG PUNYA FILE
-        ->with('incomingFiles') // Muat relasi file
-        ->paginate(5);
+    // Ambil semua region yang punya file masuk di hari ini
+    $regionsWithIncoming = Region::whereHas('incomingFiles', function ($query) use ($today) {
+        $query->whereDate('detected_at', $today);
+    })
+    ->with(['incomingFiles' => function ($query) use ($today) {
+        $query->whereDate('detected_at', $today);
+    }])
+    ->paginate(5);
 
-    // Data untuk Chart
+    // Data untuk Chart per region, hanya untuk hari ini
     $chartData = Region::withCount(['incomingFiles as total_today' => function ($query) use ($today) {
         $query->whereDate('detected_at', $today);
     }])->get();
 
-    // Data untuk Kalender
+    // Data untuk kalender: jumlah file masuk per hari
     $calendarData = IncomingFile::select(
         DB::raw('DATE(detected_at) as date'),
         DB::raw('count(*) as count')
@@ -34,6 +38,7 @@ public function index()
     ->get();
 
     return view('index', compact('regionsWithIncoming', 'chartData', 'calendarData'));
+
 }
 
 }
