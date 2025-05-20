@@ -19,11 +19,15 @@ class ScanLocalDisk extends Command
         '\\\\10.20.10.98\\backup\\BRK', // Folder utama
     ];
 
-            public function handle(): void
+    public function handle(): void
     {
+        $scanned = 0;
+        $skipped = 0;
+        $archived = 0;
+
         foreach ($this->basePaths as $basePath) {
             if (!File::exists($basePath)) {
-                $this->warn("Tidak bisa mengakses: $basePath");
+                $this->warn("❌ Tidak bisa mengakses: $basePath");
                 continue;
             }
 
@@ -45,67 +49,74 @@ class ScanLocalDisk extends Command
                     $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
                     $proceedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Proceed';
 
-                    // Scan folder New
+                    // 1. SCAN folder NEW
                     if (File::exists($newPath)) {
                         $files = File::files($newPath);
 
                         foreach ($files as $file) {
-                            $this->info("Memproses file di New: {$file->getFilename()}");
+                            $filename = $file->getFilename();
 
-                            $exists = IncomingFile::where('filename', $file->getFilename())
+                            $alreadyExists = IncomingFile::where('filename', $filename)
                                 ->where('region_id', $region->id)
                                 ->where('partner_id', $partner->id)
                                 ->exists();
 
-                            if (!$exists) {
+                            if (!$alreadyExists) {
                                 IncomingFile::create([
-                                    'filename' => $file->getFilename(),
+                                    'filename' => $filename,
                                     'path' => $file->getRealPath(),
                                     'region_id' => $region->id,
                                     'partner_id' => $partner->id,
                                     'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
                                 ]);
-
-                                $this->info("📥 File baru: {$file->getFilename()} ($regionName/$partnerName)");
+                                $this->info("📥 File baru: $filename ($regionName/$partnerName)");
+                                $scanned++;
                             } else {
-                                $this->info("File sudah ada di DB, skip: {$file->getFilename()}");
+                                $this->line("⏭️  Skip (sudah ada): $filename ($regionName/$partnerName)");
+                                $skipped++;
                             }
                         }
                     }
 
-                    // Scan folder Proceed
+                    // 2. SCAN folder PROCEED → Pindah ke Archived
                     if (File::exists($proceedPath)) {
                         $proceedFiles = File::files($proceedPath);
 
                         foreach ($proceedFiles as $pFile) {
-                            $this->info("Memproses file di Proceed: {$pFile->getFilename()}");
+                            $filename = $pFile->getFilename();
 
-                            $archived = ArchivedFile::where('filename', $pFile->getFilename())
+                            $alreadyArchived = ArchivedFile::where('filename', $filename)
                                 ->where('region_id', $region->id)
                                 ->where('partner_id', $partner->id)
                                 ->exists();
 
-                            if (!$archived) {
+                            if (!$alreadyArchived) {
                                 ArchivedFile::create([
-                                    'filename' => $pFile->getFilename(),
+                                    'filename' => $filename,
                                     'moved_at' => Carbon::createFromTimestamp($pFile->getMTime()),
                                     'region_id' => $region->id,
                                     'partner_id' => $partner->id,
                                 ]);
 
-                                IncomingFile::where('filename', $pFile->getFilename())
+                                // Hapus dari Incoming jika masih ada
+                                IncomingFile::where('filename', $filename)
                                     ->where('region_id', $region->id)
                                     ->where('partner_id', $partner->id)
                                     ->delete();
 
-                                $this->info("📤 File diarsipkan: {$pFile->getFilename()} ($regionName/$partnerName)");
-                            } else {
-                                $this->info("File sudah diarsipkan, skip: {$pFile->getFilename()}");
+                                $this->info("📤 File diarsipkan: $filename ($regionName/$partnerName)");
+                                $archived++;
                             }
                         }
                     }
                 }
             }
         }
+        // Summary
+        $this->newLine();
+        $this->info("✅ Scan selesai.");
+        $this->line("➕ File baru ditambahkan : $scanned");
+        $this->line("⏭️  File di-skip         : $skipped");
+        $this->line("📦 File diarsipkan       : $archived");
     }
 }

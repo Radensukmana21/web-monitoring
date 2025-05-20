@@ -9,6 +9,25 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 
+<button class="btn btn-primary" onclick="testScan()">Scan Lokal Disk</button>
+
+<!-- Modal Loading -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+        <div class="row mb-2 justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        </div>
+      <div>Memindai file lokal...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Alert Notifikasi -->
+<div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
+
 <div class="card mb-5 mb-xl-8">
     <div class="card-header border-0 pt-5">
         <h3 class="card-title align-items-start flex-column">
@@ -28,13 +47,6 @@
         </div>
     </div><br><br>
 
-    <form action="{{ route('scan.localdisk') }}" method="POST" class="mt-3">
-    @csrf
-    <button type="submit" class="btn btn-primary">
-        🔄 Jalankan Scan Local Disk
-    </button>
-</form>
-
     <!-- Notifikasi Hari Ini -->
     <div class="col-md-12 text-center">
         <span class="fw-bolder fs-3 mb-1">Notifikasi Hari Ini</span>       
@@ -53,6 +65,9 @@
             <div class="mt-4">
     {{ $regionsWithIncoming->links('pagination::bootstrap-5') }}
 </div>
+
+
+
 
 <style>
     .pagination svg {
@@ -78,6 +93,94 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+ 
+    function scanLocalDisk() {
+        fetch('/test-scan', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => console.log('✅ Scan dijalankan:', data))
+        .catch(error => console.error('❌ Gagal scan:', error));
+    }
+
+
+    
+</script>
+
+<script>
+    function showAlert(message, type = 'success') {
+        const alertId = 'alert-' + Date.now();
+        const alertHTML = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        document.getElementById('alert-container').insertAdjacentHTML('beforeend', alertHTML);
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            const alertEl = document.getElementById(alertId);
+            if (alertEl) bootstrap.Alert.getOrCreateInstance(alertEl).close();
+        }, 5000);
+    }
+
+    function testScan() {
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        // Tampilkan modal loading
+        loadingModal.show();
+
+        fetch('/test-scan', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal memproses scan');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('✅ Scan berhasil:', data);
+            if (data?.status === "success") {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: data.message,
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: data.message || 'Terjadi kesalahan tidak diketahui.'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('❌ Gagal scan:', error);
+            showAlert('❌ Terjadi kesalahan saat scan lokal disk.', 'danger');
+        })
+        .finally(() => {
+            loadingModal.hide();
+        });
+    }
+</script>
+
 
 <script>
     // Kalender
