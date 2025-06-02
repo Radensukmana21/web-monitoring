@@ -45,134 +45,134 @@ class IndexController extends Controller
 
     }
 
-    protected array $basePaths = [
-        '\\\\10.20.10.98\\backup\\BRK', // Folder utama
-    ];
+    // protected array $basePaths = [
+    //     '\\\\10.20.10.98\\backup\\BRK', // Folder utama
+    // ];
 
-    public function testScan(){
-        $scanned = 0;
-        $skipped = 0;
-        $archived = 0;
-        $message = '';
-        // return response()->json([
-        //         'status' => 'success',
-        //         'message' => $message
-        //     ]);
+    // public function testScan(){
+    //     $scanned = 0;
+    //     $skipped = 0;
+    //     $archived = 0;
+    //     $message = '';
+    //     // return response()->json([
+    //     //         'status' => 'success',
+    //     //         'message' => $message
+    //     //     ]);
 
-        try {
-            foreach ($this->basePaths as $basePath) {
-                if (!File::exists($basePath)) {
-                    // $this->warn("❌ Tidak bisa mengakses: $basePath");
-                    return back()->with('error',"❌ Tidak bisa mengakses: $basePath");
-                    continue;
-                }
+    //     try {
+    //         foreach ($this->basePaths as $basePath) {
+    //             if (!File::exists($basePath)) {
+    //                 // $this->warn("❌ Tidak bisa mengakses: $basePath");
+    //                 return back()->with('error',"❌ Tidak bisa mengakses: $basePath");
+    //                 continue;
+    //             }
 
-                $today = Carbon::today();
-                $regionFolders = File::directories($basePath);
+    //             $today = Carbon::today();
+    //             $regionFolders = File::directories($basePath);
     
-                $todayFolders = collect($regionFolders)->filter(function ($folderPath) use ($today) {
-                    $lastModified = Carbon::createFromTimestamp(File::lastModified($folderPath));
-                    return $lastModified->isSameDay($today);
-                });
-                // $regionFolders = File::directories($this->basePaths[0]);
+    //             $todayFolders = collect($regionFolders)->filter(function ($folderPath) use ($today) {
+    //                 $lastModified = Carbon::createFromTimestamp(File::lastModified($folderPath));
+    //                 return $lastModified->isSameDay($today);
+    //             });
+    //             // $regionFolders = File::directories($this->basePaths[0]);
     
-                foreach ($todayFolders as $regionPath) {
+    //             foreach ($todayFolders as $regionPath) {
                     
-                    $regionName = basename($regionPath);
-                    $region = Region::firstOrCreate(['name' => $regionName]);
+    //                 $regionName = basename($regionPath);
+    //                 $region = Region::firstOrCreate(['name' => $regionName]);
     
-                    $partnerFolders = File::directories($regionPath);
+    //                 $partnerFolders = File::directories($regionPath);
                    
-                    foreach ($partnerFolders as $partnerPath) {
-                        $partnerName = basename($partnerPath);
-                        $partner = Partner::firstOrCreate([
-                            'region_id' => $region->id,
-                            'name' => $partnerName,
-                        ]);
+    //                 foreach ($partnerFolders as $partnerPath) {
+    //                     $partnerName = basename($partnerPath);
+    //                     $partner = Partner::firstOrCreate([
+    //                         'region_id' => $region->id,
+    //                         'name' => $partnerName,
+    //                     ]);
     
-                        $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
-                        $proceedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Proceed';
+    //                     $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
+    //                     $proceedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Proceed';
     
-                        // 1. SCAN folder NEW
-                        if (File::exists($newPath)) {
-                            $files = File::files($newPath);
+    //                     // 1. SCAN folder NEW
+    //                     if (File::exists($newPath)) {
+    //                         $files = File::files($newPath);
     
-                            foreach ($files as $file) {
-                                $filename = $file->getFilename();
+    //                         foreach ($files as $file) {
+    //                             $filename = $file->getFilename();
     
-                                $alreadyExists = IncomingFile::where('filename', $filename)
-                                    ->where('region_id', $region->id)
-                                    ->where('partner_id', $partner->id)
-                                    ->exists();
+    //                             $alreadyExists = IncomingFile::where('filename', $filename)
+    //                                 ->where('region_id', $region->id)
+    //                                 ->where('partner_id', $partner->id)
+    //                                 ->exists();
     
-                                if (!$alreadyExists) {
-                                    IncomingFile::create([
-                                        'filename' => $filename,
-                                        'path' => $file->getRealPath(),
-                                        'region_id' => $region->id,
-                                        'partner_id' => $partner->id,
-                                        'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
-                                    ]);
+    //                             if (!$alreadyExists) {
+    //                                 IncomingFile::create([
+    //                                     'filename' => $filename,
+    //                                     'path' => $file->getRealPath(),
+    //                                     'region_id' => $region->id,
+    //                                     'partner_id' => $partner->id,
+    //                                     'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
+    //                                 ]);
     
-                                    $message .= "📥 File baru: $filename ($regionName/$partnerName) <br>";
-                                    // $this->info("📥 File baru: $filename ($regionName/$partnerName)");
-                                    $scanned++;
-                                } else {
-                                    $message .= "⏭️  Skip (sudah ada): $filename ($regionName/$partnerName) <br>";
-                                    // $this->line("⏭️  Skip (sudah ada): $filename ($regionName/$partnerName)");
-                                    $skipped++;
-                                }
-                            }
-                        }
+    //                                 $message .= "📥 File baru: $filename ($regionName/$partnerName) <br>";
+    //                                 // $this->info("📥 File baru: $filename ($regionName/$partnerName)");
+    //                                 $scanned++;
+    //                             } else {
+    //                                 $message .= "⏭️  Skip (sudah ada): $filename ($regionName/$partnerName) <br>";
+    //                                 // $this->line("⏭️  Skip (sudah ada): $filename ($regionName/$partnerName)");
+    //                                 $skipped++;
+    //                             }
+    //                         }
+    //                     }
     
-                        // 2. SCAN folder PROCEED → Pindah ke Archived
-                        if (File::exists($proceedPath)) {
-                            $proceedFiles = File::files($proceedPath);
+    //                     // 2. SCAN folder PROCEED → Pindah ke Archived
+    //                     if (File::exists($proceedPath)) {
+    //                         $proceedFiles = File::files($proceedPath);
     
-                            foreach ($proceedFiles as $pFile) {
-                                $filename = $pFile->getFilename();
+    //                         foreach ($proceedFiles as $pFile) {
+    //                             $filename = $pFile->getFilename();
     
-                                $alreadyArchived = ArchivedFile::where('filename', $filename)
-                                    ->where('region_id', $region->id)
-                                    ->where('partner_id', $partner->id)
-                                    ->exists();
+    //                             $alreadyArchived = ArchivedFile::where('filename', $filename)
+    //                                 ->where('region_id', $region->id)
+    //                                 ->where('partner_id', $partner->id)
+    //                                 ->exists();
     
-                                if (!$alreadyArchived) {
-                                    ArchivedFile::create([
-                                        'filename' => $filename,
-                                        'moved_at' => Carbon::createFromTimestamp($pFile->getMTime()),
-                                        'region_id' => $region->id,
-                                        'partner_id' => $partner->id,
-                                    ]);
+    //                             if (!$alreadyArchived) {
+    //                                 ArchivedFile::create([
+    //                                     'filename' => $filename,
+    //                                     'moved_at' => Carbon::createFromTimestamp($pFile->getMTime()),
+    //                                     'region_id' => $region->id,
+    //                                     'partner_id' => $partner->id,
+    //                                 ]);
     
-                                    // Hapus dari Incoming jika masih ada
-                                    IncomingFile::where('filename', $filename)
-                                        ->where('region_id', $region->id)
-                                        ->where('partner_id', $partner->id)
-                                        ->delete();
+    //                                 // Hapus dari Incoming jika masih ada
+    //                                 IncomingFile::where('filename', $filename)
+    //                                     ->where('region_id', $region->id)
+    //                                     ->where('partner_id', $partner->id)
+    //                                     ->delete();
     
-                                    $message .= "📤 File diarsipkan: $filename ($regionName/$partnerName) <br>";
-                                    // $this->info("📤 File diarsipkan: $filename ($regionName/$partnerName)");
-                                    $archived++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+    //                                 $message .= "📤 File diarsipkan: $filename ($regionName/$partnerName) <br>";
+    //                                 // $this->info("📤 File diarsipkan: $filename ($regionName/$partnerName)");
+    //                                 $archived++;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
 
 
-            return response()->json([
-                'status' => 'success',
-                'message' => $message
-            ]);
-        } catch (\Exception $e) {
-             return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage().' - '.$e->getLine()
-            ]);
-        }
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => $message
+    //         ]);
+    //     } catch (\Exception $e) {
+    //          return response()->json([
+    //             'status' => 'error',
+    //             'message' => $e->getMessage().' - '.$e->getLine()
+    //         ]);
+    //     }
 
-    }
+    // }
 
 }

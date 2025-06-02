@@ -48,76 +48,47 @@
             <div class="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500"
                 id="#kt_aside_menu" data-kt-menu="true">
 
-                 <div class="menu-item">
-                    <a class="menu-link {{ Request::is('index')}}"
-                        href="{{ url('/') }}">
+                <div class="menu-item">
+                    <a class="menu-link {{ Request::is('index')}}" href="{{ url('/') }}">
                         <span class="menu-icon">
                             <i class="fas fa-chart-line"></i>
                         </span>
                         <span class="menu-title">Dashboard</span>
                     </a>
                 </div>
-                <div class="menu-item">
-                    <a class="menu-link {{ Request::is('/daftar-wilayah')}}"
-                        href="{{ route('region.list') }}">
+                <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                    <span class="menu-link">
                         <span class="menu-icon">
                             <i class="fas fa-city"></i>
                         </span>
                         <span class="menu-title">List Wilayah</span>
-                    </a>
-                </div>
-                        <!-- <div data-kt-menu-trigger="click" class="menu-item ps-3 menu-accordion">
-                            <span class="">
-                                <a href=""
-                                    class="menu-link {{ Request::is('admin/masterdata-sumber-energi*') ? 'active' : ''}}">
-                                    <span class="menu-icon">
-                                        {{-- <i class="icon fas fa-file-alt"></i> --}}
-                                        <i class="fas fa-users"></i>
-                                    </span>
-                                    <span class="menu-title">Sumber Energi</span>
-                                </a>
-                            </span>
-                        </div>
-                        <div data-kt-menu-trigger="click" class="menu-item ps-3 menu-accordion">
-                            <span class="">
-                                <a href=""
-                                    class="menu-link {{ Request::is('admin/masterdata-provinsi*') ? 'active' : ''}}">
-                                    <span class="menu-icon">
-                                        {{-- <i class="icon fas fa-file-alt"></i> --}}
-                                        <i class="fas fa-users"></i>
-                                    </span>
-                                    <span class="menu-title">Provinsi</span>
-                                </a>
-                            </span>
-                        </div>
-                    </div>
-                </div> -->
-
-                <!-- <div data-kt-menu-trigger="click"
-                    class="menu-item {{ Request::is('admin/manajemen-akun*') ? 'show' : ''}} menu-accordion">
-                    <span class="menu-link">
-                        <span class="menu-icon">
-                            <i class="fas fa-user-cog"></i>
-                            {{-- <i class="icon fas fa-folder-open"></i> --}}
-                        </span>
-                        <span class="menu-title">Manajemen Akun</span>
                         <span class="menu-arrow"></span>
                     </span>
-                    <div class="menu-sub menu-sub-accordion menu-active-bg">
-                        <div data-kt-menu-trigger="click" class="menu-item ps-3 menu-accordion">
-                            <span class="">
-                                <a href=""
-                                    class="menu-link {{ Request::is('admin/manajemen-akun/user*') ? 'active' : ''}}">
-                                    <span class="menu-icon">
-                                        {{-- <i class="icon fas fa-file-alt"></i> --}}
-                                        <i class="fas fa-users"></i>
-                                    </span>
-                                    <span class="menu-title">User</span>
-                                </a>
-                            </span>
+
+                    <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-item">
+                            <a class="menu-link {{ Request::is('/daftar-wilayah')}}"
+                            href="{{ route('region.list') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">BRK</span>
+                            </a>
+                        </div>
+                        <div class="menu-item">
+                            <a class="menu-link {{ Request::is('...')  }}"
+                                href="{{ url('...') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Bengkulu</span>
+                            </a>
+                        </div>
+                        <div class="menu-item">
+                            <a class="menu-link {{ Request::is('...')  }}"
+                                href="{{ url('...') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Sumut</span>
+                            </a>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
             </div>
 
