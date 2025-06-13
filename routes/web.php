@@ -23,6 +23,9 @@ Route::get('/', [IndexController::class, 'index']
 )->middleware('auth');
 
 Route::get('/daftar-wilayah', [RegionListController::class, 'index'])->name('region.list');
+Route::get('/daftar-wilayah/bengkulu', [RegionListController::class, 'bengkuluList'])->name('region.bengkulu');
+Route::get('/daftar-wilayah/sumut', [RegionListController::class, 'sumutList'])->name('region.sumut');
+
 
 Route::post('/scan-localdisk', [ScanController::class, 'run'])->name('scan.localdisk');
 

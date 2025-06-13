@@ -13,6 +13,16 @@ class IncomingFile extends Model
         'filename', 'path', 'region_id', 'partner_id', 'detected_at'
     ];
 
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function partner()
+    {
+        return $this->belongsTo(Partner::class);
+    }
+
     protected $casts = [
         'detected_at' => 'datetime',
     ];

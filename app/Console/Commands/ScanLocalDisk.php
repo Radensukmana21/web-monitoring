@@ -12,20 +12,16 @@ use Carbon\Carbon;
 class ScanLocalDisk extends Command
 {
     protected $signature = 'scan:localdisk';
-    protected $description = 'Scan folder NEW untuk file tahun berjalan saja';
-
-    protected array $basePaths = [
-        '\\\\10.20.10.98\\backup\\BRK',
-        // 'C:\backup\BRK',
-    ];
+    protected $description = 'Scan folder "New" untuk file tahun berjalan dari semua path';
 
     public function handle(): void
     {
+        $basePaths = config('filescan.base_paths');
         $scanned = 0;
         $skipped = 0;
         $currentYear = now()->year;
 
-        foreach ($this->basePaths as $basePath) {
+        foreach ($basePaths as $basePath) {
             if (!File::exists($basePath)) {
                 $this->warn("❌ Tidak bisa mengakses: $basePath");
                 continue;
@@ -47,47 +43,40 @@ class ScanLocalDisk extends Command
                     ]);
 
                     $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
+                    if (!File::exists($newPath)) continue;
 
-                    if (File::exists($newPath)) {
-                        $files = File::files($newPath);
+                    foreach (File::files($newPath) as $file) {
+                        $fileYear = Carbon::createFromTimestamp($file->getMTime())->year;
+                        if ($fileYear !== $currentYear) continue;
 
-                        foreach ($files as $file) {
-                            $fileYear = Carbon::createFromTimestamp($file->getMTime())->year;
+                        $filename = $file->getFilename();
+                        $exists = IncomingFile::where('filename', $filename)
+                            ->where('region_id', $region->id)
+                            ->where('partner_id', $partner->id)
+                            ->exists();
 
-                            if ($fileYear !== $currentYear) {
-                                continue; // Lewatkan file bukan tahun ini
-                            }
-
-                            $filename = $file->getFilename();
-                            $alreadyExists = IncomingFile::where('filename', $filename)
-                                ->where('region_id', $region->id)
-                                ->where('partner_id', $partner->id)
-                                ->exists();
-
-                            if (!$alreadyExists) {
-                                IncomingFile::create([
-                                    'filename' => $filename,
-                                    'path' => $file->getRealPath(),
-                                    'region_id' => $region->id,
-                                    'partner_id' => $partner->id,
-                                    'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
-                                ]);
-                                $this->info("📥 File baru: $filename ($regionName/$partnerName)");
-                                $scanned++;
-                            } else {
-                                $this->line("⏭️  Skip (sudah ada): $filename ($regionName/$partnerName)");
-                                $skipped++;
-                            }
+                        if (!$exists) {
+                            IncomingFile::create([
+                                'filename' => $filename,
+                                'path' => $file->getRealPath(),
+                                'region_id' => $region->id,
+                                'partner_id' => $partner->id,
+                                'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
+                            ]);
+                            $this->info("📥 Baru: $filename ($regionName/$partnerName)");
+                            $scanned++;
+                        } else {
+                            $this->line("⏭️  Skip: $filename ($regionName/$partnerName)");
+                            $skipped++;
                         }
                     }
                 }
             }
         }
 
-        // Summary
         $this->newLine();
         $this->info("✅ Scan selesai.");
-        $this->line("➕ File baru ditambahkan : $scanned");
-        $this->line("⏭️  File di-skip         : $skipped");
+        $this->line("➕ Ditambahkan : $scanned");
+        $this->line("⏭️  Di-skip     : $skipped");
     }
 }

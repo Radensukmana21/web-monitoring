@@ -74,15 +74,15 @@
                             </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link {{ Request::is('...')  }}"
-                                href="{{ url('...') }}">
+                            <a class="menu-link {{ Request::is('/daftar-wilayah/bengkulu')  }}"
+                                href="{{ route('region.bengkulu') }}">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Bengkulu</span>
                             </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link {{ Request::is('...')  }}"
-                                href="{{ url('...') }}">
+                            <a class="menu-link {{ Request::is('/daftar-wilayah/sumut')  }}"
+                                href="{{ route('region.sumut') }}">
                                 <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
                                 <span class="menu-title">Sumut</span>
                             </a>

@@ -4,7 +4,7 @@
 @section('breadcumb-3', 'Daftar Wilayah')
 
 @section('content')
-<h4 class="mb-4">Daftar Wilayah & Mitra BRK</h4>
+<h4 class="mb-4">Daftar Wilayah & Mitra sumut</h4>
 
 <div class="accordion" id="regionAccordion">
     @foreach ($regions as $region)
