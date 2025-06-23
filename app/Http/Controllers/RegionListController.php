@@ -10,95 +10,110 @@ class RegionListController extends Controller
     public function index()
     {
         // Wilayah default (BRK)
-        $regions = Region::with([
-            'partners' => function ($query) {
-                $query->withCount([
-                    'incomingFiles as file_count' => function ($q) {
-                        $q->leftJoin('archived_files', function ($join) {
+        $regions = Region::whereHas('incomingFiles', function ($query) {
+            $query->where('path', 'LIKE', '%BRK%');
+        })
+            ->with([
+                'partners' => function ($query) {
+                    $query->withCount([
+                        'incomingFiles as file_count' => function ($q) {
+                            $q->where('path', 'LIKE', '%BRK%')
+                                ->leftJoin('archived_files', function ($join) {
+                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
+                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
+                                })->whereNull('archived_files.id');
+                        }
+                    ]);
+                }
+            ])
+            ->withCount([
+                'incomingFiles as file_count' => function ($q) {
+                    $q->where('path', 'LIKE', '%BRK%')
+                        ->leftJoin('archived_files', function ($join) {
                             $join->on('incoming_files.filename', '=', 'archived_files.filename')
                                 ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
                         })->whereNull('archived_files.id');
-                    }
-                ]);
-            }
-        ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->leftJoin('archived_files', function ($join) {
-                        $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                            ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                    })->whereNull('archived_files.id');
                 }
             ])
             ->paginate(5);
 
         return view('regions.index', [
             'regions' => $regions,
-            'title' => 'BRK'
+            'title' => 'BRK',
+            'label' => 'Daftar Wilayah & Mitra BRK'
         ]);
     }
 
     public function bengkuluList()
     {
-        // Filter hanya wilayah bernama "Bengkulu"
-        $regions = Region::with([
-            'partners' => function ($query) {
-                $query->withCount([
-                    'incomingFiles as file_count' => function ($q) {
-                        $q->leftJoin('archived_files', function ($join) {
+        $regions = Region::whereHas('incomingFiles', function ($query) {
+            $query->where('path', 'LIKE', '%bengkulu%'); // otomatis berdasar folder path
+        })
+            ->with([
+                'partners' => function ($query) {
+                    $query->withCount([
+                        'incomingFiles as file_count' => function ($q) {
+                            $q->where('path', 'LIKE', '%bengkulu%')
+                                ->leftJoin('archived_files', function ($join) {
+                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
+                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
+                                })->whereNull('archived_files.id');
+                        }
+                    ]);
+                }
+            ])
+            ->withCount([
+                'incomingFiles as file_count' => function ($q) {
+                    $q->where('path', 'LIKE', '%bengkulu%')
+                        ->leftJoin('archived_files', function ($join) {
                             $join->on('incoming_files.filename', '=', 'archived_files.filename')
                                 ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
                         })->whereNull('archived_files.id');
-                    }
-                ]);
-            }
-        ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->leftJoin('archived_files', function ($join) {
-                        $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                            ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                    })->whereNull('archived_files.id');
                 }
             ])
-            ->whereRaw('LOWER(name) = ?', ['bengkulu'])
             ->paginate(5);
 
-        return view('regions.bengkulu', [
+        return view('regions.index', [
             'regions' => $regions,
-            'title' => 'Bengkulu'
+            'title' => 'Bengkulu',
+            'label' => 'Daftar Wilayah & Mitra Bengkulu'
         ]);
     }
 
+
     public function sumutList()
     {
-        // Filter hanya wilayah bernama "Sumut"
-        $regions = Region::with([
-            'partners' => function ($query) {
-                $query->withCount([
-                    'incomingFiles as file_count' => function ($q) {
-                        $q->leftJoin('archived_files', function ($join) {
+        $regions = Region::whereHas('incomingFiles', function ($query) {
+            $query->where('path', 'LIKE', '%sumut%');
+        })
+            ->with([
+                'partners' => function ($query) {
+                    $query->withCount([
+                        'incomingFiles as file_count' => function ($q) {
+                            $q->where('path', 'LIKE', '%sumut%')
+                                ->leftJoin('archived_files', function ($join) {
+                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
+                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
+                                })->whereNull('archived_files.id');
+                        }
+                    ]);
+                }
+            ])
+            ->withCount([
+                'incomingFiles as file_count' => function ($q) {
+                    $q->where('path', 'LIKE', '%sumut%')
+                        ->leftJoin('archived_files', function ($join) {
                             $join->on('incoming_files.filename', '=', 'archived_files.filename')
                                 ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
                         })->whereNull('archived_files.id');
-                    }
-                ]);
-            }
-        ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->leftJoin('archived_files', function ($join) {
-                        $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                            ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                    })->whereNull('archived_files.id');
                 }
             ])
-            ->whereRaw('LOWER(name) = ?', ['sumut'])
             ->paginate(5);
 
-        return view('regions.sumut', [
+        return view('regions.index', [
             'regions' => $regions,
-            'title' => 'Sumut'
+            'title' => 'Sumut',
+            'label' => 'Daftar Wilayah & Mitra Sumut'
         ]);
     }
 }

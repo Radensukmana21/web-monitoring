@@ -23,25 +23,53 @@ class IndexController extends Controller
         $regionsWithIncoming = Region::whereHas('incomingFiles', function ($query) use ($today) {
             $query->whereDate('detected_at', $today);
         })
-        ->with(['incomingFiles' => function ($query) use ($today) {
-            $query->whereDate('detected_at', $today);
-        }])
-        ->paginate(5);
+            ->with([
+                'incomingFiles' => function ($query) use ($today) {
+                    $query->whereDate('detected_at', $today);
+                }
+            ])
+            ->paginate(5);
 
         // Data untuk Chart per region, hanya untuk hari ini
-        $chartData = Region::withCount(['incomingFiles as total_today' => function ($query) use ($today) {
-            $query->whereDate('detected_at', $today);
-        }])->get();
+        // BRK
+        $chartBrk = Region::withCount([
+            'incomingFiles as total_today' => function ($query) use ($today) {
+                $query->whereDate('detected_at', $today)
+                    ->where('path', 'LIKE', '%BRK%');
+            }
+        ])->get()->filter(fn($item) => $item->total_today > 0)->values();
+
+        // Bengkulu
+        $chartBengkulu = Region::withCount([
+            'incomingFiles as total_today' => function ($query) use ($today) {
+                $query->whereDate('detected_at', $today)
+                    ->where('path', 'LIKE', '%bengkulu%');
+            }
+        ])->get()->filter(fn($item) => $item->total_today > 0)->values();
+
+        // Sumut
+        $chartSumut = Region::withCount([
+            'incomingFiles as total_today' => function ($query) use ($today) {
+                $query->whereDate('detected_at', $today)
+                    ->where('path', 'LIKE', '%sumut%');
+            }
+        ])->get()->filter(fn($item) => $item->total_today > 0)->values();
+
 
         // Data untuk kalender: jumlah file masuk per hari
         $calendarData = IncomingFile::select(
             DB::raw('DATE(detected_at) as date'),
             DB::raw('count(*) as count')
         )
-        ->groupBy('date')
-        ->get();
+            ->groupBy('date')
+            ->get();
 
-        return view('index', compact('regionsWithIncoming', 'chartData', 'calendarData'));
+        return view('index', compact(
+        'regionsWithIncoming',
+        'chartBrk',
+        'chartBengkulu',
+        'chartSumut',
+        'calendarData' ));
 
     }
 
@@ -69,42 +97,42 @@ class IndexController extends Controller
 
     //             $today = Carbon::today();
     //             $regionFolders = File::directories($basePath);
-    
+
     //             $todayFolders = collect($regionFolders)->filter(function ($folderPath) use ($today) {
     //                 $lastModified = Carbon::createFromTimestamp(File::lastModified($folderPath));
     //                 return $lastModified->isSameDay($today);
     //             });
     //             // $regionFolders = File::directories($this->basePaths[0]);
-    
+
     //             foreach ($todayFolders as $regionPath) {
-                    
+
     //                 $regionName = basename($regionPath);
     //                 $region = Region::firstOrCreate(['name' => $regionName]);
-    
+
     //                 $partnerFolders = File::directories($regionPath);
-                   
+
     //                 foreach ($partnerFolders as $partnerPath) {
     //                     $partnerName = basename($partnerPath);
     //                     $partner = Partner::firstOrCreate([
     //                         'region_id' => $region->id,
     //                         'name' => $partnerName,
     //                     ]);
-    
+
     //                     $newPath = $partnerPath . DIRECTORY_SEPARATOR . 'New';
     //                     $proceedPath = $partnerPath . DIRECTORY_SEPARATOR . 'Proceed';
-    
+
     //                     // 1. SCAN folder NEW
     //                     if (File::exists($newPath)) {
     //                         $files = File::files($newPath);
-    
+
     //                         foreach ($files as $file) {
     //                             $filename = $file->getFilename();
-    
+
     //                             $alreadyExists = IncomingFile::where('filename', $filename)
     //                                 ->where('region_id', $region->id)
     //                                 ->where('partner_id', $partner->id)
     //                                 ->exists();
-    
+
     //                             if (!$alreadyExists) {
     //                                 IncomingFile::create([
     //                                     'filename' => $filename,
@@ -113,7 +141,7 @@ class IndexController extends Controller
     //                                     'partner_id' => $partner->id,
     //                                     'detected_at' => Carbon::createFromTimestamp($file->getMTime()),
     //                                 ]);
-    
+
     //                                 $message .= "📥 File baru: $filename ($regionName/$partnerName) <br>";
     //                                 // $this->info("📥 File baru: $filename ($regionName/$partnerName)");
     //                                 $scanned++;
@@ -124,19 +152,19 @@ class IndexController extends Controller
     //                             }
     //                         }
     //                     }
-    
+
     //                     // 2. SCAN folder PROCEED → Pindah ke Archived
     //                     if (File::exists($proceedPath)) {
     //                         $proceedFiles = File::files($proceedPath);
-    
+
     //                         foreach ($proceedFiles as $pFile) {
     //                             $filename = $pFile->getFilename();
-    
+
     //                             $alreadyArchived = ArchivedFile::where('filename', $filename)
     //                                 ->where('region_id', $region->id)
     //                                 ->where('partner_id', $partner->id)
     //                                 ->exists();
-    
+
     //                             if (!$alreadyArchived) {
     //                                 ArchivedFile::create([
     //                                     'filename' => $filename,
@@ -144,13 +172,13 @@ class IndexController extends Controller
     //                                     'region_id' => $region->id,
     //                                     'partner_id' => $partner->id,
     //                                 ]);
-    
+
     //                                 // Hapus dari Incoming jika masih ada
     //                                 IncomingFile::where('filename', $filename)
     //                                     ->where('region_id', $region->id)
     //                                     ->where('partner_id', $partner->id)
     //                                     ->delete();
-    
+
     //                                 $message .= "📤 File diarsipkan: $filename ($regionName/$partnerName) <br>";
     //                                 // $this->info("📤 File diarsipkan: $filename ($regionName/$partnerName)");
     //                                 $archived++;

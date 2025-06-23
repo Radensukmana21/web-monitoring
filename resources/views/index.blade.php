@@ -13,23 +13,52 @@
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
 
     <div class="card mb-5 mb-xl-8">
-        <div class="card-header border-0 pt-5">
-            <h3 class="card-title align-items-start flex-column">
-                <span class="card-label fw-bolder fs-3 mb-1">Data Layanan</span>
-            </h3>
+        <!-- <div class="card-header border-0 pt-5">
+                <h3 class="card-title align-items-start flex-column">
+                    <span class="card-label fw-bolder fs-3 mb-1">Grafik BRK</span>
+                </h3>
+            </div> -->
+
+        <!-- <div class="row"> -->
+        <!-- Diagram Batang -->
+        <div class="row">
+            <!-- Grafik BRK + Kalender -->
+            <div class="col-lg-8 col-md-12 mb-5">
+                <div class="card-header border-0 pt-5">
+                    <h3 class="card-title align-items-start flex-column">
+                        <span class="card-label fw-bolder fs-3 mb-1"> BRK</span>
+                    </h3>
+                </div>
+                <canvas id="chartBrk" height="120"></canvas>
+            </div>
+
+            <div class="col-lg-4 col-md-12 mb-5 d-flex align-items-center justify-content-center">
+                <div class="calendar-input border rounded p-3 w-400"></div>
+            </div>
         </div>
 
         <div class="row">
-            <!-- Diagram Batang -->
-            <div class="col-lg-6 col-md-12">
-                <canvas id="densityCanvas"></canvas>
+            <div class="col-lg-8 col-md-12 mb-5">
+                <div class="card-header border-0 pt-5">
+                    <h3 class="card-title align-items-start flex-column">
+                        <span class="card-label fw-bolder fs-3 mb-1"> Bengkulu</span>
+                    </h3>
+                </div>
+                <canvas id="chartBengkulu" height="120"></canvas>
             </div>
+        </div>
 
-            <!-- Kalender -->
-            <div class="col-lg-6 col-md-12 d-flex justify-content-center">
-                <div class="calendar-input border rounded"></div>
+        <div class="row">
+            <div class="col-lg-8 col-md-12 mb-5">
+                <div class="card-header border-0 pt-5">
+                    <h3 class="card-title align-items-start flex-column">
+                        <span class="card-label fw-bolder fs-3 mb-1"> Sumut</span>
+                    </h3>
+                </div>
+                <canvas id="chartSumut" height="120"></canvas>
             </div>
-        </div><br><br>
+        </div>
+
 
         <button class="btn btn-primary" onclick="testScan()">Scan Lokal Disk</button>
 
@@ -66,17 +95,6 @@
                     {{ $regionsWithIncoming->links('pagination::bootstrap-5') }}
                 </div>
 
-                <style>
-                    .pagination svg {
-                        width: 1em;
-                        height: 1em;
-                    }
-
-                    .pagination nav>div:first-child {
-                        display: none;
-                    }
-                </style>
-
             @endif
         </div>
     </div>
@@ -84,6 +102,12 @@
 
 @push('style')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .calendar-input .flatpickr-calendar {
+            font-size: 20px;
+            /* default 14px */
+        }
+    </style>
 @endpush
 
 @push('script')
@@ -151,32 +175,51 @@
         });
 
         // Grafik Batang
-        var densityCanvas = document.getElementById('densityCanvas').getContext('2d');
-
-        const chartLabels = @json($chartData->pluck('name'));
-        const chartCounts = @json($chartData->pluck('total_today'));
-
-        var barChart = new Chart(densityCanvas, {
-            type: 'bar',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Jumlah File Masuk Hari Ini',
-                    data: chartCounts,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+        const chartConfigs = [
+            {
+                id: 'chartBrk',
+                label: 'File Masuk BRK Hari Ini',
+                labels: @json($chartBrk->pluck('name')),
+                data: @json($chartBrk->pluck('total_today'))
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        stepSize: 1
+            {
+                id: 'chartBengkulu',
+                label: 'File Masuk Bengkulu Hari Ini',
+                labels: @json($chartBengkulu->pluck('name')),
+                data: @json($chartBengkulu->pluck('total_today'))
+            },
+            {
+                id: 'chartSumut',
+                label: 'File Masuk Sumut Hari Ini',
+                labels: @json($chartSumut->pluck('name')),
+                data: @json($chartSumut->pluck('total_today'))
+            }
+        ];
+
+        chartConfigs.forEach(config => {
+            const ctx = document.getElementById(config.id).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: config.labels,
+                    datasets: [{
+                        label: config.label,
+                        data: config.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stepSize: 1
+                        }
                     }
                 }
-            }
+            });
         });
     </script>
 @endpush
