@@ -6,13 +6,20 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\RegionListController;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\ProfileController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
 
 // Route::get('/', [IndexController::class, 'index']);
+Route::post('/scan-localdisk', [\App\Http\Controllers\FileScanController::class, 'runPythonScanner'])->name('scan.localdisk');
 
-Route::post('/scan-localdisk', function () {
-    Artisan::call('scan:localdisk');
-    return back()->with('success', 'Scan local disk berhasil dijalankan.');
-})->name('scan.localdisk');
+// Route::post('/scan-localdisk', function () {
+//     Artisan::call('scan:localdisk');
+//     return back()->with('success', 'Scan local disk berhasil dijalankan.');
+// })->name('scan.localdisk');
 Route::post('/test-scan', [IndexController::class, 'testScan'])->name('test_scan');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

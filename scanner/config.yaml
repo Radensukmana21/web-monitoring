@@ -1,0 +1,12 @@
+db:
+  host: localhost
+  user: root
+  password: 
+  database: monitored
+
+paths:
+  - \\\\10.20.10.98\\backup\\BRK
+  - \\\\10.20.10.98\\backup\\sumut
+
+flat_regions:
+  - \\\\10.20.10.98\\backup\\bengkulu

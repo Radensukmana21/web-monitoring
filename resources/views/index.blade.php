@@ -14,14 +14,27 @@
 
     <div class="card mb-5 mb-xl-8">
         <!-- <div class="card-header border-0 pt-5">
-                <h3 class="card-title align-items-start flex-column">
-                    <span class="card-label fw-bolder fs-3 mb-1">Grafik BRK</span>
-                </h3>
-            </div> -->
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">Grafik BRK</span>
+                        </h3>
+                    </div> -->
 
         <!-- <div class="row"> -->
         <!-- Diagram Batang -->
         <div class="row">
+            <form method="GET" class="mb-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select name="range" class="form-select" onchange="this.form.submit()">
+                            <option value="today" {{ $range === 'today' ? 'selected' : '' }}>Hari Ini</option>
+                            <option value="7days" {{ $range === '7days' ? 'selected' : '' }}>7 Hari Terakhir</option>
+                            <option value="30days" {{ $range === '30days' ? 'selected' : '' }}>30 Hari Terakhir</option>
+                            <option value="all" {{ $range === 'all' ? 'selected' : '' }}>Semua</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+
             <!-- Grafik BRK + Kalender -->
             <div class="col-lg-8 col-md-12 mb-5">
                 <div class="card-header border-0 pt-5">
@@ -130,17 +143,19 @@
                     console.log('Scan selesai:', response.message);
                     console.log(response.output);
 
-                    // Sembunyikan modal
                     $('#loadingModal').modal('hide');
 
+                    let alertHTML = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Scan berhasil!</strong><br>
+                ${response.output.join('<br>')}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
 
-                },
-                error: function (xhr) {
-                    console.log('Gagal scan:', xhr.responseText);
-                    $('#loadingModal').modal('hide');
-
-                    alert('Scan gagal. Cek koneksi atau permission.');
+                    $('#alert-container').html(alertHTML);
                 }
+
             });
         }
 
@@ -173,6 +188,7 @@
                 }
             }
         });
+
 
         // Grafik Batang
         const chartConfigs = [
