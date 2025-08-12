@@ -5,6 +5,18 @@
 
 @section('content')
     <!-- <h4 class="mb-4">{{ $label }}</h4> -->
+<form method="GET" action="{{ url()->current() }}" class="row g-2 mb-4">
+    <div class="col-auto">
+        <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control" placeholder="Tanggal Awal">
+    </div>
+    
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url()->current() }}" class="btn btn-secondary">Reset</a>
+    </div>
+</form>
 
     <div class="accordion" id="regionAccordion">
         @foreach ($regions as $region)

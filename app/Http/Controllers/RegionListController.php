@@ -7,113 +7,82 @@ use App\Models\Region;
 
 class RegionListController extends Controller
 {
-    public function index()
+    private function getRegions(Request $request, $folderPath, $title)
     {
-        // Wilayah default (BRK)
-        $regions = Region::whereHas('incomingFiles', function ($query) {
-            $query->where('path', 'LIKE', '%BRK%');
+        $startDate = $request->start_date;
+        $endDate   = $request->end_date;
+
+        $regions = Region::whereHas('incomingFiles', function ($query) use ($startDate, $endDate, $folderPath) {
+            $query->where('path', 'LIKE', "%{$folderPath}%");
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('incoming_files.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+            } elseif ($startDate) {
+                $query->whereDate('incoming_files.created_at', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->whereDate('incoming_files.created_at', '<=', $endDate);
+            }
         })
-            ->with([
-                'partners' => function ($query) {
-                    $query->withCount([
-                        'incomingFiles as file_count' => function ($q) {
-                            $q->where('path', 'LIKE', '%BRK%')
-                                ->leftJoin('archived_files', function ($join) {
-                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                                })->whereNull('archived_files.id');
+        ->with([
+            'partners' => function ($query) use ($startDate, $endDate, $folderPath) {
+                $query->withCount([
+                    'incomingFiles as file_count' => function ($q) use ($startDate, $endDate, $folderPath) {
+                        $q->where('path', 'LIKE', "%{$folderPath}%")
+                            ->leftJoin('archived_files', function ($join) {
+                                $join->on('incoming_files.filename', '=', 'archived_files.filename')
+                                     ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
+                            })->whereNull('archived_files.id');
+
+                        if ($startDate && $endDate) {
+                            $q->whereBetween('incoming_files.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                        } elseif ($startDate) {
+                            $q->whereDate('incoming_files.created_at', '>=', $startDate);
+                        } elseif ($endDate) {
+                            $q->whereDate('incoming_files.created_at', '<=', $endDate);
                         }
-                    ]);
+                    }
+                ]);
+            }
+        ])
+        ->withCount([
+            'incomingFiles as file_count' => function ($q) use ($startDate, $endDate, $folderPath) {
+                $q->where('path', 'LIKE', "%{$folderPath}%")
+                    ->leftJoin('archived_files', function ($join) {
+                        $join->on('incoming_files.filename', '=', 'archived_files.filename')
+                             ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
+                    })->whereNull('archived_files.id');
+
+                if ($startDate && $endDate) {
+                    $q->whereBetween('incoming_files.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                } elseif ($startDate) {
+                    $q->whereDate('incoming_files.created_at', '>=', $startDate);
+                } elseif ($endDate) {
+                    $q->whereDate('incoming_files.created_at', '<=', $endDate);
                 }
-            ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->where('path', 'LIKE', '%BRK%')
-                        ->leftJoin('archived_files', function ($join) {
-                            $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                        })->whereNull('archived_files.id');
-                }
-            ])
-            ->paginate(5);
+            }
+        ])
+        ->paginate(5)
+        ->appends($request->only(['start_date', 'end_date']));
 
         return view('regions.index', [
             'regions' => $regions,
-            'title' => 'BRK',
-            'label' => 'Daftar Wilayah & Mitra BRK'
+            'title' => $title,
+            'label' => "Daftar Wilayah & Mitra {$title}"
         ]);
     }
 
-    public function bengkuluList()
+    public function index(Request $request) // BRK
     {
-        $regions = Region::whereHas('incomingFiles', function ($query) {
-            $query->where('path', 'LIKE', '%bengkulu%'); // otomatis berdasar folder path
-        })
-            ->with([
-                'partners' => function ($query) {
-                    $query->withCount([
-                        'incomingFiles as file_count' => function ($q) {
-                            $q->where('path', 'LIKE', '%bengkulu%')
-                                ->leftJoin('archived_files', function ($join) {
-                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                                })->whereNull('archived_files.id');
-                        }
-                    ]);
-                }
-            ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->where('path', 'LIKE', '%bengkulu%')
-                        ->leftJoin('archived_files', function ($join) {
-                            $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                        })->whereNull('archived_files.id');
-                }
-            ])
-            ->paginate(5);
-
-        return view('regions.index', [
-            'regions' => $regions,
-            'title' => 'Bengkulu',
-            'label' => 'Daftar Wilayah & Mitra Bengkulu'
-        ]);
+        return $this->getRegions($request, 'BRK', 'BRK');
     }
 
-
-    public function sumutList()
+    public function bengkuluList(Request $request)
     {
-        $regions = Region::whereHas('incomingFiles', function ($query) {
-            $query->where('path', 'LIKE', '%sumut%');
-        })
-            ->with([
-                'partners' => function ($query) {
-                    $query->withCount([
-                        'incomingFiles as file_count' => function ($q) {
-                            $q->where('path', 'LIKE', '%sumut%')
-                                ->leftJoin('archived_files', function ($join) {
-                                    $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                        ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                                })->whereNull('archived_files.id');
-                        }
-                    ]);
-                }
-            ])
-            ->withCount([
-                'incomingFiles as file_count' => function ($q) {
-                    $q->where('path', 'LIKE', '%sumut%')
-                        ->leftJoin('archived_files', function ($join) {
-                            $join->on('incoming_files.filename', '=', 'archived_files.filename')
-                                ->on('incoming_files.partner_id', '=', 'archived_files.partner_id');
-                        })->whereNull('archived_files.id');
-                }
-            ])
-            ->paginate(5);
+        return $this->getRegions($request, 'bengkulu', 'Bengkulu');
+    }
 
-        return view('regions.index', [
-            'regions' => $regions,
-            'title' => 'Sumut',
-            'label' => 'Daftar Wilayah & Mitra Sumut'
-        ]);
+    public function sumutList(Request $request)
+    {
+        return $this->getRegions($request, 'sumut', 'Sumut');
     }
 }
