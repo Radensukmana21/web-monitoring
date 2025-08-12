@@ -81,15 +81,15 @@
 <body>
     
 
-    @if ($errors->any())
-        <div style="color: red;">
-            {{ $errors->first() }}
-        </div>
-    @endif
-
+    
     <form method="POST" action="/login">
         @csrf
         <h2>Login</h2>
+        @if ($errors->any())
+            <div style="color: red;">
+                {{ $errors->first() }}
+            </div>
+        @endif
         <label>Email:</label><br>
         <input type="email" name="email" value="{{ old('email') }}" required><br><br>
 
