@@ -10,10 +10,8 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
     <!-- Alert Notifikasi -->
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
-
     <div class="card mb-5 mb-xl-8">
         <!-- Diagram Batang -->
         <div class="row">
@@ -29,8 +27,12 @@
                     </div>
                 </div>
             </form>
+            <!-- Grafik + Kalender -->
+            <div class="row d-flex justify-content-center">
+                <div class="calendar-input border rounded p-3 w-400"></div>
+            </div>
 
-            <!-- Grafik BRK + Kalender -->
+            <div class="row">
             <div class="col-lg-8 col-md-12 mb-5">
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">
@@ -40,12 +42,7 @@
                 <canvas id="chartBrk" height="120"></canvas>
             </div>
 
-            <div class="col-lg-4 col-md-12 mb-5 d-flex align-items-center justify-content-center">
-                <div class="calendar-input border rounded p-3 w-400"></div>
-            </div>
-        </div>
 
-        <div class="row">
             <div class="col-lg-8 col-md-12 mb-5">
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">
@@ -66,10 +63,8 @@
                 <canvas id="chartSumut" height="120"></canvas>
             </div>
         </div>
-
-
+        <!-- Button Scan File -->
         <button class="btn btn-primary" onclick="testScan()">Scan Lokal Disk</button>
-
         <!-- Modal Loading -->
         <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -83,11 +78,9 @@
                 </div>
             </div>
         </div><br><br>
-
         <!-- Notifikasi Hari Ini -->
         <div class="col-md-12 text-center">
             <span class="fw-bolder fs-3 mb-1">Notifikasi Hari Ini</span>
-
             @if ($regionsWithIncoming->isEmpty())
                 <div class="alert alert-danger mt-4" role="alert">
                     <strong>Tidak ada data!</strong>
@@ -98,16 +91,13 @@
                         <strong>{{ $region->name }}</strong> memiliki {{ $region->incomingFiles->count() }} file masuk hari ini.
                     </div>
                 @endforeach
-
                 <div class="d-flex justify-content-center mt-4">
                     {{ $regionsWithIncoming->links('pagination::bootstrap-5') }}
                 </div>
-
             @endif
         </div>
     </div>
 @endsection
-
 @push('style')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
@@ -117,12 +107,10 @@
         }
     </style>
 @endpush
-
 @push('script')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script>
         setTimeout(() => {
             const alertElement = document.getElementById('welcomeAlert');
@@ -142,7 +130,6 @@
         function testScan() {
             // Tampilkan modal loading
             $('#loadingModal').modal('show');
-
             $.ajax({
                 url: "{{ route('scan.localdisk') }}",
                 method: 'POST',
@@ -162,14 +149,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
-
                     $('#alert-container').html(alertHTML);
                 }
 
             });
         }
-
-
     </script>
     <script>
         // Kalender
@@ -178,7 +162,6 @@
             date: item.date,
             count: item.count
         }));
-
         flatpickr(".calendar-input", {
             inline: true,
             locale: "id",
@@ -217,7 +200,6 @@
                 data: @json($chartSumut->pluck('total_today'))
             }
         ];
-
         chartConfigs.forEach(config => {
             const ctx = document.getElementById(config.id).getContext('2d');
             new Chart(ctx, {

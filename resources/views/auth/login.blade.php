@@ -74,14 +74,10 @@
         text-align: center;
     }
 </style>
-
-    <meta charset="UTF-8">
-    <title>Login</title>
+<meta charset="UTF-8">
+<title>Login</title>
 </head>
 <body>
-    
-
-    
     <form method="POST" action="/login">
         @csrf
         <h2>Login</h2>
