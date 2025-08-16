@@ -217,7 +217,7 @@
             <div class="modal-body">Klik tombol 'Logout' dibawah ini untuk keluar dari sesi</div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                <a class="btn btn-primary bg-hover-danger" href="{{ route('logout') }}" onclick="event.preventDefault();
+                <a class="btn btn-logout" href="{{ route('logout') }}" onclick="event.preventDefault();
                 document.getElementById('logout-form').submit();">Logout</a>
                 <form id="logout-form" action="{{ route('logout') }}" method="GET" class="d-none">
                     @csrf

@@ -4,22 +4,17 @@
 @section('breadcumb-3', 'Index')
 
 @section('content')
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Selamat Datang,</strong> {{ Auth::user()->name }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+    @if (session('welcome'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="welcomeAlert">
+            <strong>{{ session('welcome') }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <!-- Alert Notifikasi -->
     <div id="alert-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055;"></div>
 
     <div class="card mb-5 mb-xl-8">
-        <!-- <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">Grafik BRK</span>
-                        </h3>
-                    </div> -->
-
-        <!-- <div class="row"> -->
         <!-- Diagram Batang -->
         <div class="row">
             <form method="GET" class="mb-4">
@@ -127,7 +122,22 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        setTimeout(() => {
+            const alertElement = document.getElementById('welcomeAlert');
+            if (alertElement) {
+                // hapus class "show" biar animasi fade jalan
+                alertElement.classList.remove('show');
 
+                // tunggu durasi transisi bootstrap (150ms default), lalu benar2 close
+                setTimeout(() => {
+                    const alert = bootstrap.Alert.getOrCreateInstance(alertElement);
+                    alert.close();
+                }, 150);
+            } 
+        }, 3000); // delay 3 detik
+    </script>
     <script>
         function testScan() {
             // Tampilkan modal loading
@@ -161,8 +171,6 @@
 
 
     </script>
-
-
     <script>
         // Kalender
         const calendarData = @json($calendarData);
@@ -188,8 +196,6 @@
                 }
             }
         });
-
-
         // Grafik Batang
         const chartConfigs = [
             {

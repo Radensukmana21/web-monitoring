@@ -16,31 +16,32 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-{
-    $credentials = $request->only('email', 'password');
+    {
+        $credentials = $request->only('email', 'password');
 
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        // Generate token secara manual (contoh: random 64 karakter)
-        $token = bin2hex(random_bytes(32)); // atau Str::random(64) jika pakai helper Laravel
+            // Generate token secara manual (contoh: random 64 karakter)
+            $token = bin2hex(random_bytes(32)); // atau Str::random(64) jika pakai helper Laravel
 
-        // Simpan ke kolom remember_token
-        $user->remember_token = $token;
-        $user->save();
+            // Simpan ke kolom remember_token
+            $user->remember_token = $token;
+            $user->save();
 
-        // Jika ingin dikembalikan (opsional)
-        session(['token' => $token]);
+            // Jika ingin dikembalikan (opsional)
+            session(['token' => $token]);
 
-        return redirect()->intended('/');
+            return redirect()->intended('/')
+                             ->with('welcome', 'Selamat Datang, ' . $user->name);
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
     }
-
-    return back()->withErrors([
-        'email' => 'Email atau password salah.',
-    ])->onlyInput('email');
-}
 
     public function logout(Request $request)
     {

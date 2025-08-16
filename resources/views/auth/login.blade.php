@@ -32,7 +32,7 @@
         color: #555;
     }
 
-    input[type="email"],
+    input[type="text"],
     input[type="password"] {
         width: 100%;
         padding: 10px;
@@ -90,8 +90,8 @@
                 {{ $errors->first() }}
             </div>
         @endif
-        <label>Email:</label><br>
-        <input type="email" name="email" value="{{ old('email') }}" required><br><br>
+        <label>Username:</label><br>
+        <input type="text" name="email" value="{{ old('email') }}" required><br><br>
 
         <label>Password:</label><br>
         <input type="password" name="password" required><br><br>

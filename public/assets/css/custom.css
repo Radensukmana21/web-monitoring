@@ -1,0 +1,10 @@
+.btn-logout {
+    background-color: #dc3545 !important;   /* merah normal */
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.btn-logout:hover {
+    background-color: #a71d2a !important;   /* lebih gelap saat hover */
+    border-color: #921826 !important;
+}
