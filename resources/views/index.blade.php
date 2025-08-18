@@ -27,12 +27,7 @@
                     </div>
                 </div>
             </form>
-            <!-- Grafik + Kalender -->
-            <div class="row d-flex justify-content-center">
-                <div class="calendar-input border rounded p-3 w-400"></div>
-            </div>
-
-            <div class="row">
+            <!-- Grafik BRK + Kalender -->
             <div class="col-lg-8 col-md-12 mb-5">
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">
@@ -42,7 +37,12 @@
                 <canvas id="chartBrk" height="120"></canvas>
             </div>
 
+            <div class="col-lg-4 col-md-12 mb-5 d-flex align-items-center justify-content-center">
+                <div class="calendar-input border rounded p-3 w-400"></div>
+            </div>
+        </div>
 
+        <div class="row">
             <div class="col-lg-8 col-md-12 mb-5">
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">

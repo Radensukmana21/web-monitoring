@@ -20,6 +20,7 @@ Route::post('/scan-localdisk', [\App\Http\Controllers\FileScanController::class,
 //     Artisan::call('scan:localdisk');
 //     return back()->with('success', 'Scan local disk berhasil dijalankan.');
 // })->name('scan.localdisk');
+
 Route::post('/test-scan', [IndexController::class, 'testScan'])->name('test_scan');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');

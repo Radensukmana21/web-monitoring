@@ -20,13 +20,13 @@ class ProfileController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'username' => 'required|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
 
         $user->name = $request->name;
-        $user->email = $request->email;
+        $user->username = $request->username;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);

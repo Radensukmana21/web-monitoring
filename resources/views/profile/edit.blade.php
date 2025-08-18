@@ -20,8 +20,8 @@
         </div>
 
         <div class="mb-3">
-            <label>Email</label>
-            <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control" required>
+            <label>Username</label>
+            <input type="username" name="username" value="{{ old('username', $user->username) }}" class="form-control" required>
         </div>
 
         <div class="mb-3">

@@ -87,7 +87,7 @@
             </div>
         @endif
         <label>Username:</label><br>
-        <input type="text" name="email" value="{{ old('email') }}" required><br><br>
+        <input type="text" name="username" value="{{ old('username') }}" required><br><br>
 
         <label>Password:</label><br>
         <input type="password" name="password" required><br><br>
